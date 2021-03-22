@@ -10,6 +10,9 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <input_manager.h>
+
+
 
 
 
@@ -144,12 +147,25 @@ int SelectAndInitDisplay(char *pcName)
 	DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 		return -1;
 	}
-	DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
+
 	iError = g_ptDispOpr->DeviceInit();/* 初始化显示设备，如果成功返回值为0*/
-	DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 	return iError;	
 	
 }
+
+/* 获得显示器的分辨率*/
+int GetDispResolution(int *piXres, int *piYres)
+{
+	if (g_ptDispOpr)
+	{
+		*piXres = g_ptDispOpr->iXres;
+		*piYres = g_ptDispOpr->iYres;
+		return 0;
+	}
+	else
+		return -1;
+}
+
 
 /*要想分页显示文件，需要知道一下几个东西：
 	1.屏幕大小范围，字体大小，开始显示的位置*/
