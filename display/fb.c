@@ -37,7 +37,7 @@ static T_DispOpr g_tFbOpr = {
 /* 初始化显示设备*/
 static int  FBDeviceInit(void)
 {
-DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);	
+ DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);	
 	int ret;
 	/* 1.打开LCD*/
 	g_fd = open(FB_DEVICE_NAME, O_RDWR);
