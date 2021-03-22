@@ -2,6 +2,7 @@
 #include <disp_manager.h>
 #include <encoding_manager.h>
 #include <fonts_manager.h>
+#include <input_manager.h>
 #include <show.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,8 +17,9 @@ int main(int argc, char **argv)
 {
 	int iError;
 	int bList = 0;/*用来记录帮助参数*/
-	char cChoose;/*用来记录翻页及退出参数*/
-	
+	//char cChoose;/*用来记录翻页及退出参数*/
+
+	T_InputEvent tInputEvent;
 
 	/*初始化字体大小为16*/
 	unsigned int dwFontSize =16;
@@ -112,7 +114,13 @@ int main(int argc, char **argv)
 		printf("EncodInit error\n");
 		return -1;		
 	}
-	
+
+	iError = InputInit();
+	if (iError)
+	{
+		printf("InputInit error\n");
+		return -1;		
+	}
 
 	if (bList)/*输入参数只有-l，即显示所能支持选项*/
 	{
@@ -124,6 +132,9 @@ int main(int argc, char **argv)
 
 		printf("supported encoding: \n");
 		ShowEncodOpr();
+
+		printf("supported encoding: \n");
+		ShowInputOpr();
 
 		printf("Usage: %s [-s Size] [-d DispName] [-f freetype] [-h HZK] <text_file>\n", argv[0]);
 		return 0;
@@ -149,13 +160,18 @@ int main(int argc, char **argv)
 	}
 	/* 3.使用display-maneger.c选择显示模式，并输出点阵
 	根据传入的名字，初始化相应的显示设备*/
-	DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 	
 	iError = SelectAndInitDisplay(acDisplay);
-	DBG_PRINTF("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if (iError)
 	{
 		printf("SelectAndInitDisplay error\n");
+		return -1;
+	}
+
+	iError = AllInputDevicesInit();
+	if (iError)
+	{
+		printf("AllInputDevicesInit error\n");
 		return -1;
 	}
 
@@ -167,26 +183,27 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	printf ("Enter 'n' to show next page, 'u' to previous page,'q' to quit");
+
+		
 	while (1)
 	{
-		printf ("Enter 'n' to show next page, 'u' to previous page,'q' to quit");
-
-		do{
-			cChoose = getchar();
-		}while ((cChoose != 'n') && (cChoose != 'u') && (cChoose != 'q'));
-
-		if (cChoose == 'n')
+		if (GetInputEvent(&tInputEvent) == 0)
 		{
-			ShowNextPage();
+			if (tInputEvent.iVal == INPUT_VALUE_DOWN)
+			{
+				ShowNextPage();
+			}
+			else if (tInputEvent.iVal == INPUT_VALUE_UP)
+			{
+				ShowPrePage();
+			}	
+			else if (tInputEvent.iVal == INPUT_VALUE_EXIT)
+			{
+				return 0;
+			}
 		}
-		else if (cChoose == 'u')
-		{
-			ShowPrePage();
-		}	
-		else
-		{
-			return 0;
-		}
+			
 	}
 	return 0;	
 }
