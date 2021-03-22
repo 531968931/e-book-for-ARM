@@ -1,35 +1,50 @@
-CROSSCOMPILE := arm-linux-
 
-CFLAGS 	:= -Wall -O2 -c
-CFLAGS  += -I$(PWD)/include
+CROSS_COMPILE = arm-linux-
+AS		= $(CROSS_COMPILE)as
+LD		= $(CROSS_COMPILE)ld
+CC		= $(CROSS_COMPILE)gcc
+CPP		= $(CC) -E
+AR		= $(CROSS_COMPILE)ar
+NM		= $(CROSS_COMPILE)nm
 
-LDFLAGS := -lm -lfreetype
+STRIP		= $(CROSS_COMPILE)strip
+OBJCOPY		= $(CROSS_COMPILE)objcopy
+OBJDUMP		= $(CROSS_COMPILE)objdump
+
+export AS LD CC CPP AR NM
+export STRIP OBJCOPY OBJDUMP
+
+CFLAGS := -Wall -O2 -g
+CFLAGS += -I $(shell pwd)/include
+
+LDFLAGS := -lm -lfreetype -lts -lpthread
+
+export CFLAGS LDFLAGS
+
+TOPDIR := $(shell pwd)
+export TOPDIR
+
+TARGET := show_file
 
 
-CC 	:= $(CROSSCOMPILE)gcc
-LD 	:= $(CROSSCOMPILE)ld
+obj-y += main.o
+obj-y += display/
+obj-y += show/
+obj-y += encoding/
+obj-y += fonts/
+obj-y += input/
 
-OBJS := main.o \
-			display/disp_manager.o        \
-			display/fb.o                  \
-			encoding/ascii.o              \
-			encoding/utf-16be.o           \
-			encoding/encoding_manager.o   \
-			encoding/utf-8.o              \
-			encoding/utf-16le.o           \
-			show/show.o                   \
-			fonts/ascii.o                 \
-			fonts/gbk.o                   \
-			fonts/freetype.o              \
-			fonts/fonts_manager.o
+all : 
+	make -C ./ -f $(TOPDIR)/Makefile.build
+	$(CC) $(LDFLAGS) -o $(TARGET) built-in.o
 
-all: $(OBJS)
-	$(CC) $(LDFLAGS) -o show_file $^
 
 clean:
-	rm -f show_file
-	rm -f $(OBJS)
+	rm -f $(shell find -name "*.o")
+	rm -f $(TARGET)
 
-%.o:%.c
-	$(CC) $(CFLAGS) -o $@ $<
-
+distclean:
+	rm -f $(shell find -name "*.o")
+	rm -f $(shell find -name "*.d")
+	rm -f $(TARGET)
+	
